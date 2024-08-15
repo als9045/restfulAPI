@@ -1,7 +1,9 @@
 package org.example.restfulapi;
 
+import org.example.restfulapi.DTO.InformationDTO;
 import org.example.restfulapi.Entiry.Information;
 import org.example.restfulapi.Repository.InfoRepository;
+import org.example.restfulapi.Service.InformationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +17,9 @@ class RestfulApiApplicationTests {
 
     @Autowired
     InfoRepository repository;
+
+    @Autowired
+    InformationService service;
 
     @Test
     void Register() {
@@ -41,5 +46,16 @@ class RestfulApiApplicationTests {
         });
         System.out.println("Info======================" + information);
 
+    }
+
+    @Test
+    void register() {
+        InformationDTO information = InformationDTO.builder()
+                .ny(21)
+                .nx(22)
+                .category("LGT")
+                .baseDate(20240814)
+                .baseTime(1200).build();
+        System.out.println("dtoTOentity===="+service.register(information));
     }
 }

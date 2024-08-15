@@ -4,28 +4,37 @@ package org.example.restfulapi.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.restfulapi.Service.UriService;
+import org.example.restfulapi.DTO.InformationDTO;
+import org.example.restfulapi.Entiry.Information;
+import org.example.restfulapi.Service.InformationSerivceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.thymeleaf.expression.Arrays;
+
+import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/information")
 public class InfoRestController {
 
     @Autowired
-    UriService service;
+    InformationSerivceImpl service;
 
     @Autowired
     ObjectMapper mapper;
 
-    @GetMapping("/url")
-    public String generateUrl() throws JsonProcessingException {
+    @GetMapping("/registerWeather")
+    public InformationDTO registerWeather(@RequestParam String baseDate, @RequestParam String baseTime) throws JsonProcessingException,Exception {
         System.out.println("여기서 uri");
-        String data = service.UrlPort();
+        String data = service.urlReponse(baseDate,baseTime);
         System.out.println("data= "+data);
         JsonNode jsonNode = mapper.readTree(data);
+        ObjectMapper objectMapper = new ObjectMapper();
 
         // "response" 노드 접근
         JsonNode responseNode = jsonNode.path("response");
@@ -37,31 +46,57 @@ public class InfoRestController {
         JsonNode bodyNode = responseNode.path("body");
         JsonNode itemsNode = bodyNode.path("items");
         JsonNode itemNode = itemsNode.path("item").get(0); // 첫 번째 항목
+        InformationDTO informationDTO = objectMapper.treeToValue(itemNode, InformationDTO.class);
 
-        String baseDate = itemNode.path("baseDate").asText();
-        String baseTime = itemNode.path("baseTime").asText();
-        String category = itemNode.path("category").asText();
-        String fcstDate = itemNode.path("fcstDate").asText();
-        String fcstTime = itemNode.path("fcstTime").asText();
-        String fcstValue = itemNode.path("fcstValue").asText();
-        int nx = itemNode.path("nx").asInt();
-        int ny = itemNode.path("ny").asInt();
-
-        // 출력
-
-        System.out.println("Base Date: " + baseDate);
-        System.out.println("Base Time: " + baseTime);
-        System.out.println("Category: " + category);
-        System.out.println("Forecast Date: " + fcstDate);
-        System.out.println("Forecast Time: " + fcstTime);
-        System.out.println("Forecast Value: " + fcstValue);
-        System.out.println("NX: " + nx);
-        System.out.println("NY: " + ny);
+        service.register(informationDTO);
 
 
-        return "이이";
+        System.out.println("결과 = "+ informationDTO.getCategory());
+
+        return informationDTO;
+    }
+    @GetMapping("/findWeather")
+    public InformationDTO findWeather(@RequestParam String baseDate, @RequestParam String baseTime) throws JsonProcessingException,Exception {
+        System.out.println("여기서 uri");
+        String data = service.urlReponse(baseDate,baseTime);
+        System.out.println("data= "+data);
+        JsonNode jsonNode = mapper.readTree(data);
+
+
+        // "response" 노드 접근
+        JsonNode responseNode = jsonNode.path("response");
+
+        // "header" 노드 접근
+        JsonNode headerNode = responseNode.path("header");
+
+        // "body" 노드 접근
+        JsonNode bodyNode = responseNode.path("body");
+        JsonNode itemsNode = bodyNode.path("items");
+        JsonNode itemNode = itemsNode.path("item").get(0); // 첫 번째 항목
+        InformationDTO informationDTO = mapper.treeToValue(itemNode, InformationDTO.class);
+
+
+        System.out.println("결과 = "+ informationDTO.getCategory());
+
+        return informationDTO;
+    }
+    @GetMapping("/all")
+    public List<Information> getAllInformation() {
+
+        return service.getAllInformation();
     }
 
+    @GetMapping("/findNo")
+    public InformationDTO findInformation(@RequestParam Long no) {
+
+        System.out.println("No ="+no);
+
+        service.findNoInformation(no);
+
+        System.out.println("데이터 "+service.findNoInformation(no));
+
+        return service.findNoInformation(no);
+    }
 
 
 }
